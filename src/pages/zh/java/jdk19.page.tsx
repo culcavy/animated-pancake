@@ -17,10 +17,10 @@ function Page() {
       <section className="bulma-hero bulma-is-primary">
         <div className="bulma-hero-body">
           <p className="bulma-title">
-            ffmpeg 入门
+            JDK 19 引入的改变
           </p>
           <p className="bulma-subtitle">
-            一点微小的经验
+            虚拟线程篇
           </p>
         </div>
       </section>
