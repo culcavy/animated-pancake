@@ -17,9 +17,15 @@ function Page() {
                     </p>
                     <a className="bulma-panel-block bulma-is-active" href={import.meta.env.BASE_URL + "zh/cppintro"}>
                         <span className="bulma-panel-icon">
-                            <i className="bulma-fas fa-book" aria-hidden="true"></i>
+                            <i className="fas fa-book" aria-hidden="true"></i>
                         </span>
                         C++ 入门
+                    </a>
+                    <a className="bulma-panel-block bulma-is-active" href={import.meta.env.BASE_URL + "zh/java/jdk19"}>
+                        <span className="bulma-panel-icon">
+                            <i className="fas fa-book" aria-hidden="true"></i>
+                        </span>
+                        JDK 19 关于虚拟线程的变动
                     </a>
                 </nav>
             </section>
