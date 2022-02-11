@@ -1,5 +1,25 @@
-虚拟线程已经进入了 preview 阶段。我们来看看 Java 引入虚拟线
-程对原有 API 的改动。
+随着 OpenJDK JDK 19 [GA 发布](https://jdk.java.net/19/)，Java 的虚拟线程已经进入了 preview 阶段。
+我们来看看 Java 引入虚拟线程对原有 API 的改动。
+
+## 尝鲜方法
+
+首先，确保你使用的 JDK 为 OpenJDK JDK 19。
+
+1. 编译时为 `javac` 添加命令行参数 `--enable-preview`
+2. 运行时添加 VM 参数 `--enable-preview`
+
+## 注意事项
+
+不要池化虚拟线程。池化线程是由于线程是一种昂贵的资源，而虚拟线程的开销并不昂贵。
+
+## 虚拟线程的调度
+
+JDK 中实现了对虚拟线程的调度。调度算法类似于 Go 的 M:N 调度。
+
+JDK 的虚拟线程调度器是一个以 FIFO 模式运行的，实现了 work stealing 特性的 ForkJoinPool。
+调度程序的并行度 (parallelism) 等于可用于调度虚拟线程的平台线程的数量。默认情况下，它等于可用处理器的数量。
+但可以用属性 `jdk.virtualThreadScheduler.parallelism` 配置。需要注意到这个线程池和 stream 用的线程池
+并不是同一个。stream 使用的线程池以 LIFO 模式运行。
 
 ## *java.lang.Thread*
 

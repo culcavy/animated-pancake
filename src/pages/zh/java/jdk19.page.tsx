@@ -30,6 +30,7 @@ function Page() {
       </section>
       <section className="bulma-section">
         <div className='bulma-content'>
+          <p>发布于: Mon Oct 17 11:19:25 PM CST 2022</p>
           <Hello components={{
             // h1: BulmaH1,
             // h2: BulmaH2,

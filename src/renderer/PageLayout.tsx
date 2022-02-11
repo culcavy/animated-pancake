@@ -25,8 +25,8 @@ function PageLayout({ children }: PropsWithChildren) {
             <a className="bulma-navbar-item" href={import.meta.env.BASE_URL + 'catalog'}>
               Catalog
             </a>
-            <a className="bulma-navbar-item" href={import.meta.env.BASE_URL + 'catalog'}>
-              Catalog
+            <a className="bulma-navbar-item" href={import.meta.env.BASE_URL + 'zh/catalog'}>
+              ZH
             </a>
             <div className="bulma-navbar-item bulma-has-dropdown bulma-is-hoverable">
               <a className="bulma-navbar-link">
