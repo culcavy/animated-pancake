@@ -1,19 +1,6 @@
 export { Page }
 
 import Hello from './Hello.mdx'
-import type { PropsWithChildren } from 'react'
-
-const BulmaH1 = (props: PropsWithChildren) => {
-  return <h1 className="bulma-title">{props.children}</h1>
-}
-
-const BulmaH2 = (props: PropsWithChildren) => {
-  return <h2 className="bulma-title bulma-is-4">{props.children}</h2>
-}
-
-const BulmaH3 = (props: PropsWithChildren) => {
-  return <h2 className="bulma-title bulma-is-5 bulma-is-spaced">{props.children}</h2>
-}
 
 function Page() {
   return (
