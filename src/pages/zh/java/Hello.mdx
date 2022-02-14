@@ -24,6 +24,11 @@
 
 不需要修改不经常使用或保护内存操作的 synchronized 块和 synchronized 方法。
 
+使用以下方法你可以观察是否需要将 synchronized 替换为 `java.util.concurrent` 锁。
+
+1. 发生*固定*事件时，会发送一个 JFR 事件
+2. 使用 `jdk.tracePinnedThreads` 可以让线程 *固定* 时打印 stacktrace。
+
 ## 虚拟线程的调度
 
 JDK 中实现了对虚拟线程的调度。调度算法类似于 Go 的 M:N 调度。从 Java 代码的角度说，
