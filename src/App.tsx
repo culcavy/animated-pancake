@@ -1,10 +1,9 @@
-import { Router } from './router'
+import { Suspense } from 'react'
 
 function App() {
-  // const [count, setCount] = useState(0)
-
   return (
-    <Router />
+    <Suspense fallback={<p>loading</p>}>
+    </Suspense>
   )
 }
 
