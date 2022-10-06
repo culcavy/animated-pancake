@@ -3,6 +3,13 @@ export { Page }
 function Page() {
     return (
         <>
+            <section className="bulma-hero bulma-is-primary">
+                <div className="bulma-hero-body">
+                    <p className="bulma-title">
+                        Catalog
+                    </p>
+                </div>
+            </section>
             <section className="bulma-section">
                 <nav className="bulma-panel">
                     <p className="bulma-panel-heading">
@@ -23,7 +30,7 @@ function Page() {
                         <a>Sources</a>
                         <a>Forks</a>
                     </p> */}
-                    <a className="bulma-panel-block bulma-is-active" href={import.meta.env.BASE_URL +"hello"}>
+                    <a className="bulma-panel-block bulma-is-active" href="hello">
                         <span className="bulma-panel-icon">
                             <i className="fas fa-book" aria-hidden="true"></i>
                         </span>

@@ -15,12 +15,13 @@ echo > .nojekyll
 # if you are deploying to a custom domain
 # echo 'www.example.com' > CNAME
 
-# if [ -d .git ];
-# then
-#     rm -rf .git
-# fi
+if [ -d .git ];
+then
+    rm -rf .git
+fi
 
-RANDOM_BRANCH=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+# RANDOM_BRANCH=$(LC_CTYPE=C tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+RANDOM_BRANCH=main
 
 git init
 git checkout --orphan ${RANDOM_BRANCH}
