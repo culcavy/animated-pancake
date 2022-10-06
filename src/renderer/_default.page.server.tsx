@@ -4,11 +4,13 @@ export { passToClient }
 import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vite-plugin-ssr'
 import { PageLayout } from './PageLayout'
+import type { PageContext } from './types'
+import { PageContextProvider } from './usePageContext'
 
 // See https://vite-plugin-ssr.com/data-fetching
 const passToClient = ['pageProps']
 
-function render(pageContext: { Page: any; pageProps?: any }) {
+function render(pageContext: PageContext) {
   let pageHtml
   if (!pageContext.Page) {
     // SPA
@@ -17,16 +19,17 @@ function render(pageContext: { Page: any; pageProps?: any }) {
     // SSR / HTML-only
     const { Page, pageProps } = pageContext
     pageHtml = ReactDOMServer.renderToString(
-      <PageLayout>
-        <Page {...pageProps} />
-      </PageLayout>
+      <PageContextProvider pageContext={pageContext}>
+        <PageLayout>
+          <Page {...pageProps} />
+        </PageLayout>
+      </PageContextProvider>
     )
   }
 
   return escapeInject`<!DOCTYPE html>
     <html>
       <header>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-solarizedlight.min.css">
       </header>
       <body>
         <div id="react-container">${dangerouslySkipEscape(pageHtml)}</div>
