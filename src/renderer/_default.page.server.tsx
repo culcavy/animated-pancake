@@ -25,6 +25,9 @@ function render(pageContext: { Page: any; pageProps?: any }) {
 
   return escapeInject`<!DOCTYPE html>
     <html>
+      <header>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-solarizedlight.min.css">
+      </header>
       <body>
         <div id="react-container">${dangerouslySkipEscape(pageHtml)}</div>
       </body>
