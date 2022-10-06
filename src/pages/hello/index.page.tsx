@@ -1,6 +1,7 @@
 export { Page }
 
 import './index.css'
+import Hello from './hello.mdx'
 
 function Page() {
   return (
@@ -14,6 +15,7 @@ function Page() {
         HMR works for CSS: modify <code>pages/html-js/index.css</code> to change the color of this{' '}
         <span className="colored">red text</span>.
       </p>
+      <Hello />
     </>
   )
 }
