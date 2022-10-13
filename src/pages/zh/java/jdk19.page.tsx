@@ -8,7 +8,11 @@ const BulmaH1 = (props: PropsWithChildren) => {
 }
 
 const BulmaH2 = (props: PropsWithChildren) => {
-  return <h2 className="bulma-subtitle">{props.children}</h2>
+  return <h2 className="bulma-title bulma-is-4">{props.children}</h2>
+}
+
+const BulmaH3 = (props: PropsWithChildren) => {
+  return <h2 className="bulma-title bulma-is-5 bulma-is-spaced">{props.children}</h2>
 }
 
 function Page() {
@@ -25,15 +29,13 @@ function Page() {
         </div>
       </section>
       <section className="bulma-section">
-        <h1 className="bulma-title">Section</h1>
-        <h2 className="bulma-subtitle">
-          A simple container to divide your page into <strong>sections</strong>, like the one you're currently reading.
-        </h2>
-        
-        <Hello components={{
-          h1: BulmaH1,
-          h2: BulmaH2
-        }} />
+        <div className='bulma-content'>
+          <Hello components={{
+            // h1: BulmaH1,
+            // h2: BulmaH2,
+            // h3: BulmaH3,
+          }} />
+        </div>
       </section>
     </>
   )
