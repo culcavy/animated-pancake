@@ -1,0 +1,1 @@
+import{j as e,F as a}from"../../chunk-620a7556.js";function l(){return e(a,{children:e("section",{className:"bulma-hero bulma-is-primary",children:e("div",{className:"bulma-hero-body",children:e("p",{className:"bulma-title",children:"About me"})})})})}export{l as Page};

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+    <html><head><link rel="stylesheet" type="text/css" href="/animated-pancake/assets/_default.page.client.19926da1.css"></head>
+      <header>
+      </header>
+      <body>
+        <div id="react-container"><nav class="bulma-navbar" role="navigation" aria-label="main navigation"><div class="bulma-navbar-brand"><a class="bulma-navbar-item" href="/animated-pancake/"><i class="fas fa-home" aria-hidden="true"></i></a><a role="button" class="bulma-navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a></div><div id="navbarBasicExample" class="bulma-navbar-menu"><div class="bulma-navbar-start"><a class="bulma-navbar-item" href="/animated-pancake/catalog">Catalog</a><a class="bulma-navbar-item" href="/animated-pancake/zh/catalog">ZH</a><div class="bulma-navbar-item bulma-has-dropdown bulma-is-hoverable"><a class="bulma-navbar-link">More</a><div class="bulma-navbar-dropdown"><a class="bulma-navbar-item" href="/animated-pancake/about">About</a></div></div></div><div class="bulma-navbar-end"><div class="bulma-navbar-item"><div class="bulma-buttons"><a class="bulma-button bulma-is-light">EN</a></div></div></div></div></nav><div class="container"><div><section class="bulma-hero bulma-is-primary"><div class="bulma-hero-body"><p class="bulma-title">JDK 19 引入的改变</p><p class="bulma-subtitle">虚拟线程篇</p></div></section><section class="bulma-section"><div class="bulma-content"><p>发布于: Mon Oct 17 11:19:25 PM CST 2022</p><p>随着 OpenJDK JDK 19 <a href="https://jdk.java.net/19/">GA 发布</a>，Java 的虚拟线程已经进入了 preview 阶段。
+我们来看看 Java 引入虚拟线程对原有 API 的改动。</p>
+<h2>尝鲜方法</h2>
+<p>首先，确保你使用的 JDK 为 OpenJDK JDK 19。</p>
+<ol>
+<li>编译时为 <code>javac</code> 添加命令行参数 <code>--enable-preview</code></li>
+<li>运行时添加 VM 参数 <code>--enable-preview</code></li>
+</ol>
+<h2>注意事项</h2>
+<p>不要池化虚拟线程。池化线程是由于线程是一种昂贵的资源，而虚拟线程的开销并不昂贵。</p>
+<p>在以下两种情况下，虚拟线程不会正常卸载或者挂起，它会<em>固定</em>(pinning)在载体线程上。</p>
+<ol>
+<li>执行 synchronized 块或者 synchronized 方法时。</li>
+<li>执行 native 方法或者外部方法时。</li>
+</ol>
+<p><em>固定</em>在载体线程上不会导致程序不正确，但是可能会妨碍它的可伸缩性。你需要</p>
+<ol>
+<li>修改频繁运行的 synchronized 块来避免频繁和长时间的<em>固定</em></li>
+<li>如果目的是保护长时间的 I/O 操作，改为使用 <code>java.util.concurrent.locks.ReentrantLock</code>。</li>
+</ol>
+<p>不需要修改不经常使用或保护内存操作的 synchronized 块和 synchronized 方法。</p>
+<p>使用以下方法你可以观察是否需要将 synchronized 替换为 <code>java.util.concurrent</code> 锁。</p>
+<ol>
+<li>发生<em>固定</em>事件时，会发送一个 JFR 事件</li>
+<li>使用 <code>jdk.tracePinnedThreads</code> 可以让线程 <em>固定</em> 时打印 stacktrace。</li>
+</ol>
+<h2>虚拟线程的调度</h2>
+<p>JDK 中实现了对虚拟线程的调度。调度算法类似于 Go 的 M:N 调度。从 Java 代码的角度说，
+正在运行的虚拟线程在逻辑上独立于当前的载体。体现在以下几个方面：</p>
+<p>JDK 的虚拟线程调度器是一个以 FIFO 模式运行的，实现了 work stealing 特性的 ForkJoinPool。
+调度程序的并行度 (parallelism) 等于可用于调度虚拟线程的平台线程的数量。默认情况下，它等于可用处理器的数量。
+但可以用属性 <code>jdk.virtualThreadScheduler.parallelism</code> 配置。需要注意到这个线程池和 stream 用的线程池
+并不是同一个。stream 使用的线程池以 LIFO 模式运行。</p>
+<ol>
+<li>
+<p>虚拟线程无法获得载体线程的 id.</p>
+</li>
+<li>
+<p>虚拟线程的载体线程和虚拟线程自身的 stacktrace 是分离的。虚拟线程中抛出的异常将不包含载体的堆栈。
+线程转储也不会显示载体线程的栈帧。反之亦然。</p>
+</li>
+<li>
+<p>载体线程的 thread local 变量对于虚拟线程来说也是不可用的，反之亦然。</p>
+</li>
+</ol>
+<p>调度器暂时没有为虚拟线程实现时间共享。时间共享指的是强制抢占消耗了时间片的线程。
+虽然当平台线程数量相对较少且CPU利用率为100%时，时间共享可以有效地减少某些任务的延迟，
+但对于一百万个虚拟线程，时间共享是否同样有效尚不清楚。</p>
+<h2><em>java.lang.Thread</em></h2>
+<p>Java 19 以后引入了平台线程 (platform thread) 和虚拟线程 (virtual thread) 的概念。
+我们常讨论的有栈协程，在 JDK 19 以后由虚拟线程表示。而受操作系统管理的线程，在 JDK 19 以后
+由平台线程概念表示。</p>
+<h3>Thread Builder</h3>
+<p>Java 引入了一个 <a href="https://download.java.net/java/early_access/loom/docs/api/java.base/java/lang/Thread.Builder.html">Thread Builder</a>
+<code>Thread.Builder</code>。</p>
+<p>以下代码使用 <code>Thread.Builder</code> 创建 platform 线程，即受操作系统管理的线程。
+<code>.name(&quot;worker-&quot;, 0)</code> 表示线程名称的前缀为 <code>worker-</code>，由 <code>0</code> 开始计数。</p>
+<pre class="language-java"><code class="language-java"><span class="token comment">// 创建一个 builder</span>
+<span class="token class-name">Thread<span class="token punctuation">.</span>Builder</span> builder <span class="token operator">=</span> <span class="token class-name">Thread</span><span class="token punctuation">.</span><span class="token function">ofPlatform</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">name</span><span class="token punctuation">(</span><span class="token string">&quot;worker-&quot;</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 使用 builder 创建线程，名字为 worker-0</span>
+<span class="token class-name">Thread</span> t1 <span class="token operator">=</span> builder<span class="token punctuation">.</span><span class="token function">start</span><span class="token punctuation">(</span>task1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 使用 builder 创建线程，名字为 worker-1</span>
+<span class="token class-name">Thread</span> t2 <span class="token operator">=</span> builder<span class="token punctuation">.</span><span class="token function">start</span><span class="token punctuation">(</span>task2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>提供一个新的工具函数 <code>Thread.startVirtualThread(Runnable)</code> 可以更简便地创建虚拟线程。</p>
+<p>出于兼容性考虑，Thread 的 public 构造函数将无法创建虚拟线程。因此上述的两种方法对于
+创建虚拟线程非常重要。</p>
+<p>静态方法 <code>Thread.getAllStackTraces()</code> 返回的哈希表中，将只包含所有存活的 platform thread，
+而不包含虚拟线程的堆栈。</p>
+<p>Thread 类提供了一个新方法 <code>.threadId()</code> 获取线程的标识符。<code>Thread.getId()</code> 方法被废弃。</p>
+<h3>主要区别</h3>
+<p>Thread 类提供了一个新方法 <code>.isVirtual()</code> 检验是否此线程为虚拟线程。</p>
+<ul>
+<li>
+<p><code>Thread.setDaemon()</code> 方法无法将虚拟线程转换为非守护线程。</p>
+</li>
+<li>
+<p><code>Thread.setPriority(int)</code> 对虚拟线程将没有任何效果。</p>
+</li>
+<li>
+<p>虚拟线程不属于任何 ThreadGroup。调用 <code>getThreadGroup()</code>
+只会返回一个空的 <code>VritualThreads</code> group。</p>
+</li>
+<li>
+<p>虚拟线程将不支持 <code>stop()</code>, <code>suspend()</code>, <code>resume()</code> 方法。对虚拟线程调用这些方法会抛出异常。</p>
+</li>
+</ul>
+<h3>Thread Local</h3>
+<p>虚拟线程支持 Thread Local 和 InheritableThreadLocal。但是，虚拟线程的数量可能非常庞大。
+所以，尽量不要使用 ThreadLocal。Java 官方已经在 <code>java.base</code> 中删除了许多 ThreadLocal 变量，以为
+虚拟线程的推出做好准备。</p>
+<p>请不要池化虚拟线程，不要使用虚拟线程池。虚拟线程的设计目标是让每个虚拟线程在其生命周期中只运行一个
+任务。</p>
+<ul>
+<li>Thread Builder 提供了一个 <code>allowSetThreadLocals(boolean allow)</code> 接口禁止 ThreadLocal 变量的使用。</li>
+<li>Thread Builder 提供了一个 <code>inheritInheritableThreadLocals(boolean inherit)</code> 接口禁止 InheritableThreadLocals。</li>
+<li>context class loader 在现在的实现中类似于 InheritableThreadLocals。因此，在禁用 thread local 的
+线程上调用 <code>Thread.setContextClassLoader</code> 会抛出异常。</li>
+</ul>
+<p>现在尚未实现的 Scope-local 变量可能会成为 thread local 的替代品。</p>
+<h2><em>java.util.concurrent</em></h2>
+<p>Java 让 <code>java.util.concurrent.LockSupport</code> 提供了对虚拟线程的支持。</p>
+<p>受益于此改动，<code>Locks</code>, <code>Semaphores</code>, 阻塞队列等都将支持虚拟线程。</p>
+<p><code>Executors.newVirtualThreadPerTaskExecutor()</code> 会创建一个为每个任务都创建虚拟线程的 ExecutorService。</p>
+<p>现在 ExecutorService 支持 <code>AutoCloseable</code>。因此你可以将 ExecutorService 与 try-with-resource 语法一同使用</p>
+<pre class="language-java"><code class="language-java"><span class="token keyword">try</span> <span class="token punctuation">(</span><span class="token keyword">var</span> executor <span class="token operator">=</span> <span class="token class-name">Executors</span><span class="token punctuation">.</span><span class="token function">newVirtualThreadPerTaskExecutor</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">var</span> future1 <span class="token operator">=</span> executor<span class="token punctuation">.</span><span class="token function">submit</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token function">fetchURL</span><span class="token punctuation">(</span>url1<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">var</span> future2 <span class="token operator">=</span> executor<span class="token punctuation">.</span><span class="token function">submit</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token function">fetchURL</span><span class="token punctuation">(</span>url2<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    response<span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span>future1<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> future2<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">ExecutionException</span> <span class="token operator">|</span> <span class="token class-name">InterruptedException</span> e<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    response<span class="token punctuation">.</span><span class="token function">fail</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p><code>Future&lt;V&gt;</code> 添加了 <code>resultNow()</code>, <code>exceptionNow()</code> 方法获取已完成任务的结果和异常，
+添加了 <code>state()</code> 方法获得任务状态。这些新方法为 Future 加入 stream 和结构化并发做好了准备。</p></div></section></div></div><footer class="bulma-footer"><div class="bulma-content bulma-has-text-centered"><p><strong>animated-pancake</strong> by <a href="https://culcavy.github.io/animated-pancake">hollykbuck</a>. The source code is licensed <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.</p></div></footer></div>
+      <script id="vite-plugin-ssr_pageContext" type="application/json">{"pageContext":{"_pageId":"/src/pages/zh/java/jdk19","pageProps":"!undefined"}}</script><script type="module" src="/animated-pancake/assets/entry-client-routing.770ffb46.js" async></script><link rel="modulepreload" as="script" type="text/javascript" href="/animated-pancake/assets/src/pages/zh/java/jdk19.page.a60432fe.js"><link rel="modulepreload" as="script" type="text/javascript" href="/animated-pancake/assets/chunk-620a7556.js"><link rel="modulepreload" as="script" type="text/javascript" href="/animated-pancake/assets/src/renderer/_default.page.client.5990f459.js"><link rel="modulepreload" as="script" type="text/javascript" href="/animated-pancake/assets/entry-client-routing.770ffb46.js"><link rel="modulepreload" as="script" type="text/javascript" href="/animated-pancake/assets/chunk-565d2563.js"></body>
+    </html>

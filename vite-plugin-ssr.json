@@ -1,0 +1,7 @@
+{
+  "version": "0.4.39",
+  "usesClientRouter": true,
+  "baseUrl": "/animated-pancake/",
+  "baseAssets": null,
+  "includeAssetsImportedByServer": false
+}
